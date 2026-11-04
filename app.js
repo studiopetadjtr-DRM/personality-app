@@ -215,6 +215,64 @@ function computeResults(ans) {
   };
 }
 
+function computeOverview(r) {
+  const p = (v) => Math.round(v) + "%";
+  const ranked = Object.keys(r.ocean).sort((a, b) => r.ocean[b] - r.ocean[a]);
+  const top = ranked[0], low = ranked[ranked.length - 1];
+  const e = r.mbti.letters[0] === "E";
+  const open = r.ocean.O >= 60;
+  const archetype = e && open ? "an idea-driven collaborator" : e ? "a practical networker" : open ? "a reflective innovator" : "a steady specialist";
+  return `You come across as ${r.mbti.type} (${r.mbti.info[0]}), motivated by Enneagram ${r.ennea.top}w${r.ennea.wing} (${ENNEA_INFO[r.ennea.top][0]}), with a ${DISC_INFO[r.disc.top][0]} workplace style and a ${SLOAN_INFO[r.sloan.top][0]} team profile. ` +
+    `Your standout Big Five trait is ${OCEAN_LABELS[top]} (${p(r.ocean[top])}) and your lowest is ${OCEAN_LABELS[low]} (${p(r.ocean[low])}) — overall, ${archetype}.`;
+}
+
+function computeSwot(r) {
+  const p = (v) => Math.round(v) + "%";
+  const hi = (v) => v >= 65, lo = (v) => v <= 35;
+  const o = r.ocean, d = r.disc.scores, sl = r.sloan.scores, en = r.ennea.scores;
+  const strengths = [
+    { s: hi(o.E) ? o.E : 0, t: "Social energy & influence", d: `Extraversion ${p(o.E)} and DISC ${r.disc.top} ${p(d[r.disc.top])} — you energize groups and speak up.` },
+    { s: hi(o.C) ? o.C : 0, t: "Reliability & discipline", d: `Conscientiousness ${p(o.C)} — others can count on you to follow through.` },
+    { s: hi(o.O) ? o.O : 0, t: "Creativity & openness", d: `Openness ${p(o.O)} — you generate ideas and embrace the unconventional.` },
+    { s: hi(o.A) ? o.A : 0, t: "Empathy & collaboration", d: `Agreeableness ${p(o.A)} — you build trust and keep harmony.` },
+    { s: lo(o.N) ? 100 - o.N : 0, t: "Emotional stability", d: `Neuroticism ${p(o.N)} — you stay calm under pressure.` },
+    { s: hi(d.D) ? d.D : 0, t: "Decisiveness", d: `DISC Dominance ${p(d.D)} — you take charge and drive outcomes.` },
+    { s: hi(sl.E) ? sl.E : 0, t: "Expressive communication", d: `SLOAN Expressive ${p(sl.E)} — you share enthusiasm openly.` },
+    { s: hi(en[3]) ? en[3] : 0, t: "Drive for achievement", d: `Enneagram 3 ${p(en[3])} — you set goals and deliver results.` }
+  ];
+  const weaknesses = [
+    { s: hi(o.N) ? o.N : 0, t: "Stress sensitivity", d: `Neuroticism ${p(o.N)} — pressure and uncertainty can rattle you.` },
+    { s: lo(o.C) ? 100 - o.C : 0, t: "Follow-through risk", d: `Conscientiousness ${p(o.C)} — boring or open-ended tasks may slip.` },
+    { s: lo(o.A) ? 100 - o.A : 0, t: "Bluntness in feedback", d: `Agreeableness ${p(o.A)} — directness can read as harsh.` },
+    { s: lo(o.O) ? 100 - o.O : 0, t: "Resistance to change", d: `Openness ${p(o.O)} — new or vague approaches may frustrate you.` },
+    { s: hi(d.D) && lo(o.A) ? d.D : 0, t: "Can dominate discussions", d: `DISC D ${p(d.D)} with low agreeableness — you may override quieter voices.` },
+    { s: lo(o.E) ? 100 - o.E : 0, t: "Under-communicates in groups", d: `Extraversion ${p(o.E)} — your contributions may go unheard in big meetings.` },
+    { s: hi(en[6]) ? en[6] : 0, t: "Overthinking worst cases", d: `Enneagram 6 ${p(en[6])} — you may dwell on what could go wrong.` }
+  ];
+  const opportunities = [
+    { s: hi(o.O) && hi(o.E) ? Math.min(o.O, o.E) : 0, t: "Innovation & brainstorming roles", d: `Openness ${p(o.O)} + Extraversion ${p(o.E)} — you thrive where new ideas are welcome.` },
+    { s: hi(o.A) && hi(o.E) ? Math.min(o.A, o.E) : 0, t: "Mentoring & community roles", d: `Agreeableness ${p(o.A)} + Extraversion ${p(o.E)} — a natural fit for coaching and teamwork.` },
+    { s: hi(o.C) && hi(o.O) ? Math.min(o.C, o.O) : 0, t: "Structured innovation", d: `Conscientiousness ${p(o.C)} + Openness ${p(o.O)} — you can turn ideas into working systems.` },
+    { s: hi(sl.A) ? sl.A : 0, t: "Adaptable in changing environments", d: `SLOAN Adaptive ${p(sl.A)} — change is an opportunity, not a threat.` },
+    { s: hi(en[7]) ? en[7] : 0, t: "Exploring new ventures", d: `Enneagram 7 ${p(en[7])} — variety and novelty keep you engaged.` },
+    { s: hi(d.I) ? d.I : 0, t: "Persuasive, client-facing work", d: `DISC Influence ${p(d.I)} — you can rally others around a vision.` }
+  ];
+  const threats = [
+    { s: hi(o.N) ? o.N : 0, t: "Burnout under sustained pressure", d: `Neuroticism ${p(o.N)} — watch workload and recovery.` },
+    { s: lo(o.C) && hi(o.N) ? Math.min(100 - o.C, o.N) : 0, t: "Deadlines slip when stressed", d: `Conscientiousness ${p(o.C)} with Neuroticism ${p(o.N)} — stress can derail plans.` },
+    { s: hi(d.D) && lo(d.S) ? Math.min(d.D, 100 - d.S) : 0, t: "Friction with collaborative cultures", d: `D ${p(d.D)} vs S ${p(d.S)} — a pace-first style may clash with team-first teams.` },
+    { s: lo(o.O) && hi(o.C) ? Math.min(100 - o.O, o.C) : 0, t: "Entrenchment in proven methods", d: `Openness ${p(o.O)} with Conscientiousness ${p(o.C)} — you may resist new tools.` },
+    { s: hi(en[6]) ? en[6] : 0, t: "Needs reassurance in uncertainty", d: `Enneagram 6 ${p(en[6])} — ambiguous situations may drain you.` },
+    { s: lo(o.E) && hi(sl.I) ? Math.min(100 - o.E, sl.I) : 0, t: "Visibility risk in large organizations", d: `Extraversion ${p(o.E)}, SLOAN Individualistic ${p(sl.I)} — your work may stay invisible.` }
+  ];
+  const pick = (list) => {
+    const items = list.filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 3)
+      .map(({ t, d }) => ({ title: t, detail: d }));
+    return items.length ? items : [{ title: "Balanced profile", detail: "No extreme scores — nothing dominates this quadrant." }];
+  };
+  return { strengths: pick(strengths), weaknesses: pick(weaknesses), opportunities: pick(opportunities), threats: pick(threats) };
+}
+
 function encodeAnswers(ans) {
   return btoa(ans.map(a => (a === null ? 0 : a)).join(""));
 }
@@ -227,6 +285,8 @@ function decodeAnswers(s) {
 }
 
 function summaryText(r) {
+  const sw = computeSwot(r);
+  const titles = (q) => sw[q].map(i => i.title).join("; ");
   return [
     "All-in-One Personality Test — results",
     `MBTI: ${r.mbti.type} (${r.mbti.info[0]})`,
@@ -234,7 +294,9 @@ function summaryText(r) {
     `Enneagram: ${r.ennea.top}w${r.ennea.wing} — ${ENNEA_INFO[r.ennea.top][0]}`,
     `DISC: ${r.disc.top} — ${DISC_INFO[r.disc.top][0]}`,
     `SLOAN: ${r.sloan.top} — ${SLOAN_INFO[r.sloan.top][0]}`,
-    "OCEAN: " + GROUPS.ocean.map(k => `${k} ${r.ocean[k].toFixed(0)}%`).join(", ")
+    "OCEAN: " + GROUPS.ocean.map(k => `${k} ${r.ocean[k].toFixed(0)}%`).join(", "),
+    "Overview: " + computeOverview(r),
+    `SWOT — Strengths: ${titles("strengths")} | Weaknesses: ${titles("weaknesses")} | Opportunities: ${titles("opportunities")} | Threats: ${titles("threats")}`
   ].join("\n");
 }
 
@@ -394,6 +456,9 @@ function renderResults() {
     barRow("F ←→ T", r.mbti.dich.TF), barRow("P ←→ J", r.mbti.dich.JP)
   ].join("");
   const oceanTop = Object.keys(r.ocean).sort((a, b) => r.ocean[b] - r.ocean[a])[0];
+  const overview = computeOverview(r);
+  const swot = computeSwot(r);
+  const quad = (cls, icon, title, items) => `<div class="swot ${cls}"><h3><span aria-hidden="true">${icon}</span> ${title}</h3><ul>${items.map(i => `<li><b>${i.title}</b><span>${i.detail}</span></li>`).join("")}</ul></div>`;
   document.getElementById("app").innerHTML = `
     <div class="hero">
       <span class="emoji" aria-hidden="true">🎉</span>
@@ -409,6 +474,23 @@ function renderResults() {
         <span class="tag">Enneagram: <span translate="no">${r.ennea.top}w${r.ennea.wing}</span> — ${ENNEA_INFO[r.ennea.top][0]}</span>
         <span class="tag">DISC: <span translate="no">${r.disc.top}</span> — ${DISC_INFO[r.disc.top][0]}</span>
         <span class="tag">SLOAN: <span translate="no">${r.sloan.top}</span> — ${SLOAN_INFO[r.sloan.top][0]}</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Overview</h2>
+      <p>${overview}</p>
+      <h2 style="margin-top:16px">SWOT Snapshot</h2>
+      <p class="muted" style="font-size:.82rem;margin-bottom:6px">Internal factors on top, external below · helpful left, harmful right. Derived from your six model scores.</p>
+      <div class="swot-matrix">
+        <div class="swot-corner" aria-hidden="true"></div>
+        <div class="swot-axis">Helpful</div>
+        <div class="swot-axis">Harmful</div>
+        <div class="swot-axis">Internal</div>
+        ${quad("s", "💪", "Strengths", swot.strengths)}
+        ${quad("w", "⚠️", "Weaknesses", swot.weaknesses)}
+        <div class="swot-axis">External</div>
+        ${quad("o", "🚀", "Opportunities", swot.opportunities)}
+        ${quad("t", "⚡", "Threats", swot.threats)}
       </div>
     </div>
     <div class="result-grid">
@@ -456,7 +538,7 @@ function renderResults() {
   document.getElementById("reviewBtn").onclick = () => { reviewReturn = "results"; renderReview(); };
   document.getElementById("printBtn").onclick = () => window.print();
   document.getElementById("exportBtn").onclick = () => {
-    const data = { date: new Date().toISOString(), answers, results: r, summary: summaryText(r) };
+    const data = { date: new Date().toISOString(), answers, results: r, overview, swot, summary: summaryText(r) };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -488,5 +570,5 @@ function init() {
 
 if (typeof document !== "undefined") init();
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { QUESTIONS, GROUPS, computeResults, encodeAnswers, decodeAnswers, summaryText };
+  module.exports = { QUESTIONS, GROUPS, computeResults, computeOverview, computeSwot, encodeAnswers, decodeAnswers, summaryText };
 }
