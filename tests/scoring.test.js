@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { QUESTIONS, GROUPS, computeResults, encodeAnswers, decodeAnswers, summaryText } = require("../app.js");
+const { QUESTIONS, GROUPS, computeResults, computeOverview, computeSwot, encodeAnswers, decodeAnswers, summaryText } = require("../app.js");
 
 test("60 questions, all weights reference valid groups/keys", () => {
   assert.equal(QUESTIONS.length, 60);
@@ -102,4 +102,52 @@ test("enneagram wing is always adjacent to the top type", () => {
 test("encode/decode round-trips all-null answers", () => {
   const ans = new Array(QUESTIONS.length).fill(null);
   assert.deepEqual(decodeAnswers(encodeAnswers(ans)), ans);
+});
+
+test("computeSwot returns 4 quadrants with titled, detailed items", () => {
+  const r = computeResults(new Array(QUESTIONS.length).fill(5));
+  const sw = computeSwot(r);
+  for (const q of ["strengths", "weaknesses", "opportunities", "threats"]) {
+    assert.ok(Array.isArray(sw[q]) && sw[q].length >= 1 && sw[q].length <= 3, q);
+    for (const item of sw[q]) {
+      assert.equal(typeof item.title, "string");
+      assert.ok(item.title.length > 0);
+      assert.ok(item.detail.includes("%"), `detail should cite a score: ${item.detail}`);
+    }
+  }
+});
+
+test("computeSwot is deterministic and reacts to answers", () => {
+  const hi = computeResults(new Array(QUESTIONS.length).fill(5));
+  const lo = computeResults(new Array(QUESTIONS.length).fill(1));
+  assert.deepEqual(computeSwot(hi), computeSwot(hi));
+  assert.notDeepEqual(computeSwot(hi).strengths, computeSwot(lo).strengths);
+  assert.notDeepEqual(computeSwot(hi).threats, computeSwot(lo).threats);
+});
+
+test("all-neutral answers fall back to a balanced SWOT", () => {
+  const r = computeResults(new Array(QUESTIONS.length).fill(3));
+  const sw = computeSwot(r);
+  for (const q of ["strengths", "weaknesses", "opportunities", "threats"]) {
+    assert.equal(sw[q][0].title, "Balanced profile", q);
+  }
+});
+
+test("computeOverview mentions MBTI type, Enneagram and top OCEAN trait", () => {
+  const r = computeResults(new Array(QUESTIONS.length).fill(4));
+  const ov = computeOverview(r);
+  assert.ok(ov.includes(r.mbti.type));
+  assert.ok(ov.includes(`${r.ennea.top}w${r.ennea.wing}`));
+  const top = Object.keys(r.ocean).sort((a, b) => r.ocean[b] - r.ocean[a])[0];
+  const labels = { O: "Openness", C: "Conscientiousness", E: "Extraversion", A: "Agreeableness", N: "Neuroticism" };
+  assert.ok(ov.includes(labels[top]));
+  assert.ok(ov.includes("%"));
+});
+
+test("summaryText includes overview and SWOT lines", () => {
+  const r = computeResults(new Array(QUESTIONS.length).fill(4));
+  const s = summaryText(r);
+  assert.ok(s.includes("Overview: "));
+  assert.ok(s.includes("SWOT — Strengths:"));
+  assert.ok(s.includes("Threats:"));
 });

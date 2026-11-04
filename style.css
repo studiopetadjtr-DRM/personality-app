@@ -141,12 +141,29 @@ details.drivers li { margin: 3px 0; }
 .rev-a { color: var(--accent2); font-size: .78rem; white-space: nowrap; }
 .kbd { font-size: .72rem; color: var(--muted); margin-top: 14px; }
 .btnrow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 22px; }
+.swot-matrix { display: grid; grid-template-columns: 74px 1fr 1fr; gap: 8px; margin-top: 8px; }
+.swot-corner, .swot-axis {
+  font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+}
+.swot { background: #141830; border: 1px solid #2c3358; border-radius: 12px; padding: 12px 14px; }
+.swot h3 { font-size: .95rem; margin-bottom: 6px; }
+.swot ul { list-style: none; }
+.swot li { margin: 7px 0; font-size: .82rem; line-height: 1.35; }
+.swot li b { display: block; }
+.swot li span { color: var(--muted); }
+.swot.s { border-top: 3px solid var(--good); } .swot.s h3 { color: var(--good); }
+.swot.w { border-top: 3px solid #ffb86b; } .swot.w h3 { color: #ffb86b; }
+.swot.o { border-top: 3px solid var(--accent2); } .swot.o h3 { color: var(--accent2); }
+.swot.t { border-top: 3px solid #ff7c7c; } .swot.t h3 { color: #ff7c7c; }
 @media (max-width: 560px) {
   .answers { grid-template-columns: 1fr; }
   .ans { padding: 12px; }
   .bar-row { grid-template-columns: 96px 1fr 44px; }
   .rev-row { grid-template-columns: 28px 1fr; }
   .rev-a { grid-column: 2; white-space: normal; }
+  .swot-matrix { grid-template-columns: 1fr; }
+  .swot-corner, .swot-axis { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -175,4 +192,7 @@ details.drivers li { margin: 3px 0; }
   details.drivers ul { display: block; }
   .rev-row { background: #fff; color: #000; border-color: #ccc; }
   .rev-num, .rev-a { color: #444; }
+  .swot { background: #fff; color: #000; border: 1px solid #ccc; border-top-width: 3px; }
+  .swot h3 { color: #000; }
+  .swot li span, .swot-axis, .swot-corner { color: #444; }
 }
