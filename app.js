@@ -684,7 +684,7 @@ function renderResults() {
     const n = Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 0;
     return `<div class="swot-meter"><div class="bar pct"><div data-w="${n.toFixed(1)}" style="--w:${(n / 100).toFixed(4)}"></div></div><span class="swot-meter-val">${PCT_FMT.format(n / 100)}</span></div>`;
   };
-  const quad = (cls, icon, title, items) => `<div class="swot ${cls}"><h3><span aria-hidden="true">${icon}</span> ${title}</h3><ul>${items.map(i => `<li><b>${i.title}</b><span>${i.detail}</span>${strengthMeter(i.strength)}${i.action ? `<em class="next-step">Next step: ${i.action}</em>` : ""}</li>`).join("")}</ul></div>`;
+  const quad = (cls, icon, title, items) => `<div class="swot ${cls}"><h3><span aria-hidden="true">${icon}</span> ${title}</h3><ul>${(items || []).map(i => `<li><b>${i.title}</b><span>${i.detail}</span>${strengthMeter(i.strength)}${i.action ? `<em class="next-step">Next step: ${i.action}</em>` : ""}</li>`).join("")}</ul></div>`;
   document.getElementById("app").innerHTML = `
     <div class="hero">
       <span class="emoji" aria-hidden="true">🎉</span>
