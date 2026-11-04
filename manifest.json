@@ -1,0 +1,20 @@
+﻿{
+  "name": "All-in-One Personality Test",
+  "short_name": "Personality Test",
+  "description": "One 60-question quiz, six personality models at once: MBTI-32, Big Five OCEAN, Enneagram, Socionics, DISC, SLOAN.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f1220",
+  "theme_color": "#0f1220",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "./social-preview.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
