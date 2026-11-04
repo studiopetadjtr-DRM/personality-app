@@ -409,6 +409,10 @@ function swotSelect(items) {
 
 function computeSwot(r) {
   const out = { strengths: [], weaknesses: [], opportunities: [], threats: [] };
+  if (swotIsFlat(r)) {
+    for (const q of SWOT_QUADRANTS) out[q] = [swotBalancedItem(q)];
+    return out;
+  }
   for (const rule of SWOT_RULES) {
     if (!swotActive(r, rule)) continue;
     const raw = swotRaw(r, rule);
@@ -421,16 +425,9 @@ function computeSwot(r) {
       primary: rule.dir === "top"
     });
   }
-  for (const q of Object.keys(out)) {
-    const list = out[q].sort((a, b) => b.strength - a.strength);
-    const traits = list.filter(i => !i.primary);
-    const primaries = list.filter(i => i.primary);
-    const picked = traits.slice(0, 2).concat(primaries.slice(0, 2));
-    for (const item of list) {
-      if (picked.length >= 4) break;
-      if (!picked.includes(item)) picked.push(item);
-    }
-    out[q] = picked.sort((a, b) => b.strength - a.strength);
+  for (const q of SWOT_QUADRANTS) {
+    out[q] = swotSelect(out[q]);
+    if (!out[q].length) out[q] = [swotBalancedItem(q)];
   }
   return out;
 }
