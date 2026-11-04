@@ -19,11 +19,12 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 40px 16px 80px;
+  padding: 40px max(16px, env(safe-area-inset-right)) 80px max(16px, env(safe-area-inset-left));
 }
 #app { width: 100%; max-width: 760px; }
 h1 { font-size: clamp(1.6rem, 4vw, 2.1rem); line-height: 1.2; text-wrap: balance; }
 h2 { font-size: 1.15rem; margin-bottom: 6px; text-wrap: balance; }
+h3 { text-wrap: balance; }
 .muted { color: var(--muted); }
 .center { text-align: center; }
 .sr-only {
@@ -56,9 +57,10 @@ h2 { font-size: 1.15rem; margin-bottom: 6px; text-wrap: balance; }
 }
 .btn:hover { filter: brightness(1.12); }
 .btn:active { transform: scale(.97); }
-.btn:focus-visible, .ans:focus-visible, .rev-row:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+.btn:focus-visible, .ans:focus-visible, .rev-row:focus-visible, details.drivers summary:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
 .btn.secondary { background: #2c3358; }
 .btn.ghost { background: transparent; border: 1px solid #3a4270; color: var(--muted); }
+.btn-ico { margin-right: 6px; }
 progress.progress {
   -webkit-appearance: none;
   appearance: none;
@@ -81,7 +83,7 @@ progress.progress::-moz-progress-bar {
   border-radius: 99px;
 }
 .qtext { font-size: 1.25rem; line-height: 1.45; margin: 18px 0 22px; overflow-wrap: break-word; }
-.answers { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+.answers { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 .ans {
   background: var(--panel2);
   border: 1px solid #333b66;
@@ -98,7 +100,9 @@ progress.progress::-moz-progress-bar {
 .ans small { display: block; color: var(--muted); font-size: .68rem; margin-top: 4px; }
 .ans:hover { border-color: var(--accent); transform: translateY(-2px); }
 .ans.selected { background: var(--accent); border-color: var(--accent); }
-.navrow { display: flex; justify-content: space-between; margin-top: 22px; gap: 10px; }
+.navrow { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; gap: 10px; flex-wrap: wrap; }
+.navrow > * { min-width: 0; }
+.navrow-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .models { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 16px; }
 .model-chip { background: #141830; border: 1px solid #2c3358; border-radius: 10px; padding: 12px 14px; font-size: .85rem; }
 .model-chip b { display: block; margin-bottom: 3px; color: var(--accent2); }
@@ -109,9 +113,10 @@ progress.progress::-moz-progress-bar {
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .bar-row {
-  display: grid; grid-template-columns: 130px 1fr 52px; align-items: center; gap: 10px;
+  display: grid; grid-template-columns: 130px minmax(0, 1fr) 52px; align-items: center; gap: 10px;
   margin: 7px 0; font-size: .88rem; font-variant-numeric: tabular-nums;
 }
+.bar-row > span:first-child { overflow-wrap: break-word; }
 .bar { height: 12px; background: #262c4d; border-radius: 99px; overflow: hidden; }
 .bar > div {
   height: 100%; border-radius: 99px; width: 0;
@@ -127,17 +132,20 @@ details.drivers ul { margin: 6px 0 0 18px; }
 details.drivers li { margin: 3px 0; }
 .rev-list { display: flex; flex-direction: column; gap: 6px; }
 .rev-row {
-  display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center;
+  display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center;
   width: 100%; text-align: left;
   background: var(--panel2); color: var(--text);
   border: 1px solid #333b66; border-radius: 10px;
   padding: 10px 12px; font-size: .9rem; cursor: pointer;
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   transition: border-color .12s ease;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 52px;
 }
 .rev-row:hover { border-color: var(--accent); }
 .rev-row.answered { border-color: var(--accent2); background: #1d2344; }
 .rev-num { color: var(--muted); font-variant-numeric: tabular-nums; }
+.rev-q { min-width: 0; overflow-wrap: break-word; }
 .rev-a { color: var(--accent2); font-size: .78rem; white-space: nowrap; }
 .kbd { font-size: .72rem; color: var(--muted); margin-top: 14px; }
 .btnrow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 22px; }
