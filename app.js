@@ -505,12 +505,13 @@ function summaryText(r) {
   ].join("\n");
 }
 
+const PCT_FMT = new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 0 });
 function barRow(label, p, cls) {
-  return `<div class="bar-row"><span>${label}</span><div class="bar ${cls || ""}"><div data-w="${p.toFixed(1)}"></div></div><span>${p.toFixed(0)}%</span></div>`;
+  return `<div class="bar-row"><span>${label}</span><div class="bar ${cls || ""}"><div data-w="${p.toFixed(1)}"></div></div><span>${PCT_FMT.format(p / 100)}</span></div>`;
 }
 
 function focusTop() {
-  const el = document.querySelector("#app h1, #app .qtext");
+  const el = document.querySelector("#app .qtext, #app h1");
   if (el) { el.tabIndex = -1; el.focus({ preventScroll: true }); }
 }
 
@@ -524,7 +525,7 @@ function renderStart() {
       <p class="muted" style="margin-top:8px">Answer ${QUESTIONS.length} questions once — get results for all six models at the same time.</p>
     </div>
     <div class="card">
-      <h2>What You'll Get</h2>
+      <h2>What You’ll Get</h2>
       <div class="models">
         <div class="model-chip"><b><span class="icon" aria-hidden="true">🧭</span><span translate="no">MBTI ×32</span></b>16 types + Assertive/Turbulent (e.g. ESFJ-A)</div>
         <div class="model-chip"><b><span class="icon" aria-hidden="true">🌊</span><span translate="no">Big Five (OCEAN)</span></b>5 trait scores as percentages</div>
@@ -534,9 +535,9 @@ function renderStart() {
         <div class="model-chip"><b><span class="icon" aria-hidden="true">🧩</span><span translate="no">SLOAN / RCIE</span></b>5 team-profile styles</div>
       </div>
       <div class="btnrow">
-        <button class="btn" id="startBtn">${saved ? "View Results" : "Start Quiz"} (${QUESTIONS.length} questions)</button>
+        <button class="btn" id="startBtn">${saved ? "View Results" : "Start Quiz"} (${QUESTIONS.length} Questions)</button>
         ${saved ? '<button class="btn ghost" id="resetBtn">Reset</button>' : ""}
-        <label class="btn ghost" for="importFile" style="margin:0">⬆ Import JSON<input type="file" id="importFile" name="import" accept="application/json,.json" hidden></label>
+        <label class="btn ghost" for="importFile" style="margin:0"><span class="btn-ico" aria-hidden="true">⬆</span> Import JSON<input type="file" id="importFile" name="import" accept="application/json,.json" hidden></label>
       </div>
       <p class="kbd center">Tip: use keys 1–5 to answer, Backspace to go back. Answers auto-save in this browser.</p>
     </div>`;
@@ -581,16 +582,16 @@ function renderQuestion() {
   document.getElementById("app").innerHTML = `
     <div class="card">
       <h1 class="sr-only">Question ${idx + 1} of ${QUESTIONS.length}</h1>
-      <div class="muted">Question ${idx + 1} / ${QUESTIONS.length} · ${answers.filter(a => a !== null).length} answered</div>
+      <div class="muted" id="qCounter">Question ${idx + 1} / ${QUESTIONS.length} · ${answers.filter(a => a !== null).length} answered</div>
       <progress class="progress" max="${QUESTIONS.length}" value="${idx + 1}" aria-label="Quiz progress: question ${idx + 1} of ${QUESTIONS.length}"></progress>
-      <div class="qtext">${q.q}</div>
-      <div class="answers">
-        ${ANSWER_LABELS.map((l, i) => `<button class="ans ${answers[idx] === i + 1 ? "selected" : ""}" data-v="${i + 1}">${i + 1}<small>${l}</small></button>`).join("")}
+      <div class="qtext" aria-describedby="qCounter">${q.q}</div>
+      <div class="answers" role="group" aria-label="Answer options">
+        ${ANSWER_LABELS.map((l, i) => `<button class="ans ${answers[idx] === i + 1 ? "selected" : ""}" data-v="${i + 1}" aria-pressed="${answers[idx] === i + 1}">${i + 1}<small>${l}</small></button>`).join("")}
       </div>
       <div class="navrow">
-        <button class="btn ghost" id="backBtn" ${idx === 0 ? "disabled" : ""}>← Back</button>
-        <span style="display:flex;gap:10px">
-          <button class="btn ghost" id="reviewBtn">☰ All questions</button>
+        <button class="btn ghost" id="backBtn" ${idx === 0 ? "disabled" : ""}><span class="btn-ico" aria-hidden="true">←</span> Back</button>
+        <span class="navrow-actions">
+          <button class="btn ghost" id="reviewBtn"><span class="btn-ico" aria-hidden="true">☰</span> All Questions</button>
           <button class="btn secondary" id="skipBtn">Skip</button>
         </span>
       </div>
@@ -619,8 +620,8 @@ function renderReview() {
       <p class="muted" style="margin:6px 0 14px">${answered} of ${QUESTIONS.length} answered — tap a question to change it.</p>
       <div class="rev-list">${rows}</div>
       <div class="navrow">
-        <button class="btn ghost" id="backBtn">← Back</button>
-        <button class="btn" id="resultsBtn">View Results →</button>
+        <button class="btn ghost" id="backBtn"><span class="btn-ico" aria-hidden="true">←</span> Back</button>
+        <button class="btn" id="resultsBtn">View Results <span class="btn-ico" aria-hidden="true">→</span></button>
       </div>
     </div>`;
   document.querySelectorAll(".rev-row").forEach(b => b.onclick = () => { idx = Number(b.dataset.i); renderQuestion(); });
@@ -650,7 +651,7 @@ function renderResults() {
     const ids = [...set].sort((a, b) => a - b).slice(0, 3);
     if (!ids.length) return "";
     const items = ids.map(i => `<li><b>Q${i + 1}</b> — ${QUESTIONS[i].q}</li>`).join("");
-    return `<details class="drivers"><summary>Driven by ${ids.map(i => "Q" + (i + 1)).join(" · ")} — tap to see the questions</summary><ul>${items}</ul></details>`;
+    return `<details class="drivers"><summary>Driven by ${ids.map(i => "Q" + (i + 1)).join(" · ")} — See the Questions</summary><ul>${items}</ul></details>`;
   };
   const enneaTop3 = r.ennea.top3.map(k => barRow(`${k} — ${ENNEA_INFO[k][0]}`, r.ennea.scores[k], "pct")).join("");
   const discBars = GROUPS.disc.map(k => barRow(`${k} — ${DISC_INFO[k][0]}`, r.disc.scores[k], "pct")).join("");
@@ -707,18 +708,29 @@ function renderResults() {
       <div class="card"><h2><span translate="no">SLOAN / RCIE</span> — primary: ${r.sloan.top} (${SLOAN_INFO[r.sloan.top][0]})</h2><p class="muted" style="margin-bottom:8px">${SLOAN_INFO[r.sloan.top][1]}</p>${sloanBars}${drv("sloan", [r.sloan.top])}</div>
     </div>
     <div class="btnrow">
-      <button class="btn" id="againBtn">↻ Retake Quiz</button>
-      <button class="btn secondary" id="reviewBtn">📝 Review Answers</button>
-      <button class="btn secondary" id="copyLinkBtn">🔗 Copy Link</button>
-      <button class="btn secondary" id="copySumBtn">📋 Copy Summary</button>
-      <button class="btn secondary" id="exportBtn">⬇ Export JSON</button>
-      <button class="btn secondary" id="printBtn">🖨 Print</button>
-    </div>`;
+      <button class="btn" id="againBtn"><span class="btn-ico" aria-hidden="true">↻</span><span class="btn-label">Retake Quiz</span></button>
+      <button class="btn secondary" id="reviewBtn"><span class="btn-ico" aria-hidden="true">📝</span><span class="btn-label">Review Answers</span></button>
+      <button class="btn secondary" id="copyLinkBtn"><span class="btn-ico" aria-hidden="true">🔗</span><span class="btn-label">Copy Link</span></button>
+      <button class="btn secondary" id="copySumBtn"><span class="btn-ico" aria-hidden="true">📋</span><span class="btn-label">Copy Summary</span></button>
+      <button class="btn secondary" id="exportBtn"><span class="btn-ico" aria-hidden="true">⬇</span><span class="btn-label">Export JSON</span></button>
+      <button class="btn secondary" id="printBtn"><span class="btn-ico" aria-hidden="true">🖨</span><span class="btn-label">Print</span></button>
+    </div>
+    <p class="sr-only" id="copyStatus" role="status" aria-live="polite"></p>`;
   requestAnimationFrame(() => {
     document.querySelectorAll(".bar > div").forEach(d => { d.style.width = d.dataset.w + "%"; });
   });
   document.getElementById("againBtn").onclick = () => { if (confirm("Retake the quiz? Your saved answers will be cleared.")) { answers = new Array(QUESTIONS.length).fill(null); idx = 0; localStorage.removeItem(STORE_KEY); renderStart(); } };
-  const flash = (btn, msg) => { const t = btn.textContent; btn.textContent = msg; setTimeout(() => { btn.textContent = t; }, 1500); };
+  const status = document.getElementById("copyStatus");
+  const flash = (btn, msg) => {
+    const label = btn.querySelector(".btn-label");
+    const original = label ? label.textContent : "";
+    if (label) label.textContent = msg;
+    if (status) status.textContent = msg;
+    setTimeout(() => {
+      if (label) label.textContent = original;
+      if (status) status.textContent = "";
+    }, 1500);
+  };
   const legacyCopy = (txt) => {
     try {
       const ta = document.createElement("textarea");
@@ -734,12 +746,12 @@ function renderResults() {
   };
   const copyText = (txt, btn) => {
     const done = () => flash(btn, "Copied ✓");
-    const fail = () => flash(btn, "Copy failed");
+    const fail = () => flash(btn, "Copy Failed");
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, () => legacyCopy(txt) ? done() : fail());
     else legacyCopy(txt) ? done() : fail();
   };
-  document.getElementById("copyLinkBtn").onclick = (e) => copyText(location.href, e.target);
-  document.getElementById("copySumBtn").onclick = (e) => copyText(summaryText(r), e.target);
+  document.getElementById("copyLinkBtn").onclick = (e) => copyText(location.href, e.currentTarget);
+  document.getElementById("copySumBtn").onclick = (e) => copyText(summaryText(r), e.currentTarget);
   document.getElementById("reviewBtn").onclick = () => { reviewReturn = "results"; renderReview(); };
   document.getElementById("printBtn").onclick = () => window.print();
   document.getElementById("exportBtn").onclick = () => {
