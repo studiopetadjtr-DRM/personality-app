@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { QUESTIONS, GROUPS, computeResults, computeOverview, computeSwot, encodeAnswers, decodeAnswers, summaryText } = require("../app.js");
+const { QUESTIONS, GROUPS, computeResults, computeOverview, computeSwot, buildOverview, encodeAnswers, decodeAnswers, summaryText } = require("../app.js");
 
 test("60 questions, all weights reference valid groups/keys", () => {
   assert.equal(QUESTIONS.length, 60);
@@ -150,4 +150,53 @@ test("summaryText includes overview and SWOT lines", () => {
   assert.ok(s.includes("Overview: "));
   assert.ok(s.includes("SWOT — Strengths:"));
   assert.ok(s.includes("Threats:"));
+});
+
+test("buildOverview returns summary, balance, four stats and up to three moves", () => {
+  const r = computeResults(new Array(QUESTIONS.length).fill(4));
+  const ov = buildOverview(r, computeSwot(r));
+  assert.equal(typeof ov.summary, "string");
+  assert.ok(ov.summary.length > 0);
+  assert.equal(typeof ov.balance, "string");
+  assert.ok(ov.balance.length > 0);
+  assert.equal(ov.stats.length, 4);
+  for (const s of ov.stats) {
+    assert.equal(typeof s.label, "string");
+    assert.equal(typeof s.value, "string");
+    assert.ok(s.value.length > 0);
+    assert.equal(typeof s.note, "string");
+  }
+  assert.ok(ov.moves.length >= 1 && ov.moves.length <= 3);
+  for (const m of ov.moves) {
+    assert.equal(typeof m.tag, "string");
+    assert.equal(typeof m.text, "string");
+    assert.ok(m.text.length > 0);
+  }
+});
+
+test("buildOverview stat notes are trait-agnostic", () => {
+  const r = computeResults(new Array(QUESTIONS.length).fill(4));
+  const ov = buildOverview(r, computeSwot(r));
+  const top = ov.stats.find(s => s.label === "Top trait");
+  assert.match(top.note, /^\d+% on this trait$/);
+  assert.ok(!top.note.includes("openness to experience"));
+});
+
+test("buildOverview never emits an undefined move", () => {
+  for (const v of [1, 2, 3, 4, 5]) {
+    const r = computeResults(new Array(QUESTIONS.length).fill(v));
+    const ov = buildOverview(r, computeSwot(r));
+    for (const m of ov.moves) {
+      assert.ok(m.text && !m.text.includes("undefined"), `v=${v} move=${JSON.stringify(m)}`);
+    }
+  }
+});
+
+test("buildOverview reports no watch-out on a flat profile", () => {
+  const r = computeResults(new Array(QUESTIONS.length).fill(3));
+  const ov = buildOverview(r, computeSwot(r));
+  const watch = ov.stats.find(s => s.label === "Watch-out");
+  assert.equal(watch.value, "None");
+  assert.ok(!ov.summary.includes("most likely to cost you"));
+  assert.ok(ov.summary.includes("no clear watch-out"));
 });

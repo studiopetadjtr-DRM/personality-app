@@ -461,14 +461,21 @@ function buildOverview(r, swot) {
   else if (wAvg - sAvg >= 8) balance = "Weaknesses outweigh strengths — the growth edge sits in the lower-left quadrant.";
   else balance = "Strengths and weaknesses are close to balanced.";
   const flat = swotIsFlat(r);
+  const signalLine = flat
+    ? `Every OCEAN trait sits in the neutral band, so there is no clear watch-out. `
+    : `Your clearest signal is ${OCEAN_LABELS[oceanTop]} at ${Math.round(r.ocean[oceanTop])}%, and your watch-out is ${OCEAN_LABELS[oceanRisk]} at ${Math.round(r.ocean[oceanRisk])}%. `;
   const summary =
     `You read as ${r.mbti.type} — ${r.mbti.info[0]}. ${r.mbti.info[1]} ` +
-    `Your clearest signal is ${OCEAN_LABELS[oceanTop]} at ${Math.round(r.ocean[oceanTop])}%, and your watch-out is ${OCEAN_LABELS[oceanRisk]} at ${Math.round(r.ocean[oceanRisk])}%. ` +
+    signalLine +
     `At work you come across as ${DISC_INFO[r.disc.top][0]} (${r.disc.top}), your team profile is ${SLOAN_INFO[r.sloan.top][0]} (${r.sloan.top}), and your core drive is Enneagram ${r.ennea.top}w${r.ennea.wing} — ${ENNEA_INFO[r.ennea.top][0]}.` +
-    (flat ? " No single signal dominates this profile, so the SWOT below stays deliberately balanced." : "");
+    (flat ? " The SWOT below stays deliberately balanced." : "");
   const stats = [
-    { label: "Top trait", value: OCEAN_LABELS[oceanTop], note: `${Math.round(r.ocean[oceanTop])}% on this trait` },
-    { label: "Watch-out", value: OCEAN_LABELS[oceanRisk], note: `${Math.round(r.ocean[oceanRisk])}% — most likely to cost you` },
+    flat
+      ? { label: "Top trait", value: "No clear leader", note: "Every trait sits in the neutral band" }
+      : { label: "Top trait", value: OCEAN_LABELS[oceanTop], note: `${Math.round(r.ocean[oceanTop])}% on this trait` },
+    flat
+      ? { label: "Watch-out", value: "None", note: "No trait stands out as a risk" }
+      : { label: "Watch-out", value: OCEAN_LABELS[oceanRisk], note: `${Math.round(r.ocean[oceanRisk])}% — most likely to cost you` },
     { label: "Work style", value: `${r.disc.top} · ${DISC_INFO[r.disc.top][0]}`, note: DISC_INFO[r.disc.top][1] },
     { label: "Core drive", value: `${r.ennea.top}w${r.ennea.wing} · ${ENNEA_INFO[r.ennea.top][0]}`, note: ENNEA_INFO[r.ennea.top][1] }
   ];
