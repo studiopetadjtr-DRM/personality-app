@@ -203,5 +203,10 @@ FORM: Grounded candidate 4, Signal Atlas; staging: a restrained code-generated s
   <p>For reflection, not diagnosis.</p>
 </footer>
 <script src="landing.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
 </body>
 </html>

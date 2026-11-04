@@ -167,8 +167,8 @@ details.drivers li { margin: 3px 0; }
 @media (max-width: 560px) {
   .answers { grid-template-columns: 1fr; }
   .ans { padding: 12px; }
-  .bar-row { grid-template-columns: 96px 1fr 44px; }
-  .rev-row { grid-template-columns: 28px 1fr; }
+  .bar-row { grid-template-columns: 96px minmax(0, 1fr) 44px; }
+  .rev-row { grid-template-columns: 28px minmax(0, 1fr); }
   .rev-a { grid-column: 2; white-space: normal; }
   .swot-matrix { grid-template-columns: 1fr; }
   .swot-corner, .swot-axis { display: none; }
@@ -198,7 +198,7 @@ details.drivers li { margin: 3px 0; }
   .tag { background: #eee; color: #000; }
   .model-chip { background: #fff; color: #000; border-color: #ccc; }
   details.drivers ul { display: block; }
-  .rev-row { background: #fff; color: #000; border-color: #ccc; }
+  .rev-row { background: #fff; color: #000; border-color: #ccc; content-visibility: visible; }
   .rev-num, .rev-a { color: #444; }
   .swot { background: #fff; color: #000; border: 1px solid #ccc; border-top-width: 3px; }
   .swot h3 { color: #000; }
