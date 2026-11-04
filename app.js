@@ -149,10 +149,10 @@ const SWOT_RULES = [
   { id: "s-ocean-e", dim: "ocean", key: "E", dir: "high", q: "strengths", title: "Energized by people", detail: "Extraversion {v}% — social contact gives you energy instead of draining it.", action: "Put yourself in the room where decisions actually get made." },
   { id: "s-ocean-a", dim: "ocean", key: "A", dir: "high", q: "strengths", title: "Cooperative and empathetic", detail: "Agreeableness {v}% — you read people well and build trust quickly.", action: "Be the person who checks in on the people nobody asks about." },
   { id: "s-ocean-n", dim: "ocean", key: "N", dir: "low", q: "strengths", title: "Steady under pressure", detail: "Neuroticism {v}% — low reactivity means you stay composed when things go wrong.", action: "Take the high-stakes task other people are avoiding." },
-  { id: "s-disc-d", dim: "disc", key: "D", dir: "top", q: "strengths", title: "Decisive and results-focused", detail: "Your primary DISC style is D — you move fast and own the outcome.", action: "Lead the stalled initiative nobody wants to touch." },
-  { id: "s-disc-i", dim: "disc", key: "I", dir: "top", q: "strengths", title: "Persuasive and enthusiastic", detail: "Your primary DISC style is I — you energize people and sell ideas.", action: "Represent the idea in the room where it needs a champion." },
-  { id: "s-disc-s", dim: "disc", key: "S", dir: "top", q: "strengths", title: "Patient and supportive", detail: "Your primary DISC style is S — you steady the team and keep trust.", action: "Be the steady hand on a team that changes direction often." },
-  { id: "s-disc-c", dim: "disc", key: "C", dir: "top", q: "strengths", title: "Accurate and quality-focused", detail: "Your primary DISC style is C — you catch errors and protect standards.", action: "Own the quality bar on one deliverable everyone else rushes." },
+  { id: "s-disc-d", dim: "disc", key: "D", dir: "top", q: "strengths", title: "Decisive and results-focused", detail: "Your primary DISC style is D ({v}%) — you move fast and own the outcome.", action: "Lead the stalled initiative nobody wants to touch." },
+  { id: "s-disc-i", dim: "disc", key: "I", dir: "top", q: "strengths", title: "Persuasive and enthusiastic", detail: "Your primary DISC style is I ({v}%) — you energize people and sell ideas.", action: "Represent the idea in the room where it needs a champion." },
+  { id: "s-disc-s", dim: "disc", key: "S", dir: "top", q: "strengths", title: "Patient and supportive", detail: "Your primary DISC style is S ({v}%) — you steady the team and keep trust.", action: "Be the steady hand on a team that changes direction often." },
+  { id: "s-disc-c", dim: "disc", key: "C", dir: "top", q: "strengths", title: "Accurate and quality-focused", detail: "Your primary DISC style is C ({v}%) — you catch errors and protect standards.", action: "Own the quality bar on one deliverable everyone else rushes." },
   { id: "s-sloan-r", dim: "sloan", key: "R", dir: "top", q: "strengths", title: "Observant and thoughtful", detail: "Your SLOAN profile is R — you think before you act and notice what others miss.", action: "Write up the pattern you keep noticing but nobody has written down." },
   { id: "s-sloan-c", dim: "sloan", key: "C", dir: "top", q: "strengths", title: "Risk-aware and careful", detail: "Your SLOAN profile is C — you spot hazards early and prefer proven routes.", action: "Take the role that reviews risk before it becomes a problem." },
   { id: "s-sloan-i", dim: "sloan", key: "I", dir: "top", q: "strengths", title: "Independent and self-reliant", detail: "Your SLOAN profile is I — you do your best work without supervision.", action: "Claim a piece of work that needs deep, uninterrupted focus." },
@@ -440,26 +440,32 @@ function buildOverview(r, swot) {
   const sAvg = avg(swot.strengths);
   const wAvg = avg(swot.weaknesses);
   let balance;
-  if (sAvg - wAvg >= 8) balance = "Strengths outweigh weaknesses in this profile.";
+  if (sAvg - wAvg >= 8) balance = "Strengths outweigh weaknesses in this profile — lean on them.";
   else if (wAvg - sAvg >= 8) balance = "Weaknesses outweigh strengths — the growth edge sits in the lower-left quadrant.";
   else balance = "Strengths and weaknesses are close to balanced.";
+  const signal = swotIsFlat(r)
+    ? `No dimension stands out — ${OCEAN_LABELS[oceanTop]} and every other score sit between ${SWOT_FLAT_BAND}% and ${100 - SWOT_FLAT_BAND}%.`
+    : `Your clearest signal is ${OCEAN_LABELS[oceanTop]} at ${Math.round(r.ocean[oceanTop])}%, and your watch-out is ${OCEAN_LABELS[oceanRisk]} at ${Math.round(r.ocean[oceanRisk])}%.`;
   const summary =
     `You read as ${r.mbti.type} — ${r.mbti.info[0]}. ${r.mbti.info[1]} ` +
-    `Your clearest signal is ${OCEAN_LABELS[oceanTop]} at ${Math.round(r.ocean[oceanTop])}%, and your watch-out is ${OCEAN_LABELS[oceanRisk]} at ${Math.round(r.ocean[oceanRisk])}%. ` +
+    `${signal} ` +
     `At work you come across as ${DISC_INFO[r.disc.top][0]} (${r.disc.top}), your team profile is ${SLOAN_INFO[r.sloan.top][0]} (${r.sloan.top}), and your core drive is Enneagram ${r.ennea.top}w${r.ennea.wing} — ${ENNEA_INFO[r.ennea.top][0]}.`;
   const stats = [
-    { label: "Top trait", value: OCEAN_LABELS[oceanTop], note: `${Math.round(r.ocean[oceanTop])}% openness to experience` },
+    { label: "Top trait", value: OCEAN_LABELS[oceanTop], note: `${Math.round(r.ocean[oceanTop])}% on this trait` },
     { label: "Watch-out", value: OCEAN_LABELS[oceanRisk], note: `${Math.round(r.ocean[oceanRisk])}% — most likely to cost you` },
     { label: "Work style", value: `${r.disc.top} · ${DISC_INFO[r.disc.top][0]}`, note: DISC_INFO[r.disc.top][1] },
     { label: "Core drive", value: `${r.ennea.top}w${r.ennea.wing} · ${ENNEA_INFO[r.ennea.top][0]}`, note: ENNEA_INFO[r.ennea.top][1] }
   ];
   const moves = [];
-  const pushMove = (q, tag) => { const it = swot[q][0]; if (it) moves.push({ tag, text: it.action }); };
+  const pushMove = (q, tag) => {
+    const it = swot[q].find(i => i.id !== "balanced") || swot[q][0];
+    if (it && it.action && !moves.some(m => m.text === it.action)) moves.push({ tag, text: it.action });
+  };
   pushMove("opportunities", "Opportunity");
   pushMove("weaknesses", "Weakness");
   pushMove("threats", "Threat");
-  if (moves.length < 3) pushMove("strengths", "Strength");
-  return { summary, balance, stats, moves };
+  pushMove("strengths", "Strength");
+  return { summary, balance, stats, moves: moves.slice(0, 3) };
 }
 
 function encodeAnswers(ans) {
