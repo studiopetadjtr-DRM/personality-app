@@ -1,4 +1,4 @@
-const CACHE_NAME = 'personality-app-v2';
+const CACHE_NAME = 'personality-app-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -7,6 +7,8 @@ const ASSETS = [
   './landing.css',
   './app.js',
   './landing.js',
+  './manifest.json',
+  './icon-512.png',
   './social-preview.png'
 ];
 

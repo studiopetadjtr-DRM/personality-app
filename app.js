@@ -149,15 +149,15 @@ const SWOT_RULES = [
   { id: "s-ocean-e", dim: "ocean", key: "E", dir: "high", q: "strengths", title: "Energized by people", detail: "Extraversion {v}% — social contact gives you energy instead of draining it.", action: "Put yourself in the room where decisions actually get made." },
   { id: "s-ocean-a", dim: "ocean", key: "A", dir: "high", q: "strengths", title: "Cooperative and empathetic", detail: "Agreeableness {v}% — you read people well and build trust quickly.", action: "Be the person who checks in on the people nobody asks about." },
   { id: "s-ocean-n", dim: "ocean", key: "N", dir: "low", q: "strengths", title: "Steady under pressure", detail: "Neuroticism {v}% — low reactivity means you stay composed when things go wrong.", action: "Take the high-stakes task other people are avoiding." },
-  { id: "s-disc-d", dim: "disc", key: "D", dir: "top", q: "strengths", title: "Decisive and results-focused", detail: "Your primary DISC style is D — you move fast and own the outcome.", action: "Lead the stalled initiative nobody wants to touch." },
-  { id: "s-disc-i", dim: "disc", key: "I", dir: "top", q: "strengths", title: "Persuasive and enthusiastic", detail: "Your primary DISC style is I — you energize people and sell ideas.", action: "Represent the idea in the room where it needs a champion." },
-  { id: "s-disc-s", dim: "disc", key: "S", dir: "top", q: "strengths", title: "Patient and supportive", detail: "Your primary DISC style is S — you steady the team and keep trust.", action: "Be the steady hand on a team that changes direction often." },
-  { id: "s-disc-c", dim: "disc", key: "C", dir: "top", q: "strengths", title: "Accurate and quality-focused", detail: "Your primary DISC style is C — you catch errors and protect standards.", action: "Own the quality bar on one deliverable everyone else rushes." },
-  { id: "s-sloan-r", dim: "sloan", key: "R", dir: "top", q: "strengths", title: "Observant and thoughtful", detail: "Your SLOAN profile is R — you think before you act and notice what others miss.", action: "Write up the pattern you keep noticing but nobody has written down." },
-  { id: "s-sloan-c", dim: "sloan", key: "C", dir: "top", q: "strengths", title: "Risk-aware and careful", detail: "Your SLOAN profile is C — you spot hazards early and prefer proven routes.", action: "Take the role that reviews risk before it becomes a problem." },
-  { id: "s-sloan-i", dim: "sloan", key: "I", dir: "top", q: "strengths", title: "Independent and self-reliant", detail: "Your SLOAN profile is I — you do your best work without supervision.", action: "Claim a piece of work that needs deep, uninterrupted focus." },
-  { id: "s-sloan-e", dim: "sloan", key: "E", dir: "top", q: "strengths", title: "Outgoing and energetic", detail: "Your SLOAN profile is E — you bring energy and presence to a room.", action: "Host the gathering instead of attending it." },
-  { id: "s-sloan-a", dim: "sloan", key: "A", dir: "top", q: "strengths", title: "Flexible and adaptable", detail: "Your SLOAN profile is A — you adjust quickly when plans change.", action: "Be the person who keeps a shifting project moving." },
+  { id: "s-disc-d", dim: "disc", key: "D", dir: "top", q: "strengths", title: "Decisive and results-focused", detail: "Your primary DISC style is D ({v}%) — you move fast and own the outcome.", action: "Lead the stalled initiative nobody wants to touch." },
+  { id: "s-disc-i", dim: "disc", key: "I", dir: "top", q: "strengths", title: "Persuasive and enthusiastic", detail: "Your primary DISC style is I ({v}%) — you energize people and sell ideas.", action: "Represent the idea in the room where it needs a champion." },
+  { id: "s-disc-s", dim: "disc", key: "S", dir: "top", q: "strengths", title: "Patient and supportive", detail: "Your primary DISC style is S ({v}%) — you steady the team and keep trust.", action: "Be the steady hand on a team that changes direction often." },
+  { id: "s-disc-c", dim: "disc", key: "C", dir: "top", q: "strengths", title: "Accurate and quality-focused", detail: "Your primary DISC style is C ({v}%) — you catch errors and protect standards.", action: "Own the quality bar on one deliverable everyone else rushes." },
+  { id: "s-sloan-r", dim: "sloan", key: "R", dir: "top", q: "strengths", title: "Observant and thoughtful", detail: "Your SLOAN profile is R ({v}%) — you think before you act and notice what others miss.", action: "Write up the pattern you keep noticing but nobody has written down." },
+  { id: "s-sloan-c", dim: "sloan", key: "C", dir: "top", q: "strengths", title: "Risk-aware and careful", detail: "Your SLOAN profile is C ({v}%) — you spot hazards early and prefer proven routes.", action: "Take the role that reviews risk before it becomes a problem." },
+  { id: "s-sloan-i", dim: "sloan", key: "I", dir: "top", q: "strengths", title: "Independent and self-reliant", detail: "Your SLOAN profile is I ({v}%) — you do your best work without supervision.", action: "Claim a piece of work that needs deep, uninterrupted focus." },
+  { id: "s-sloan-e", dim: "sloan", key: "E", dir: "top", q: "strengths", title: "Outgoing and energetic", detail: "Your SLOAN profile is E ({v}%) — you bring energy and presence to a room.", action: "Host the gathering instead of attending it." },
+  { id: "s-sloan-a", dim: "sloan", key: "A", dir: "top", q: "strengths", title: "Flexible and adaptable", detail: "Your SLOAN profile is A ({v}%) — you adjust quickly when plans change.", action: "Be the person who keeps a shifting project moving." },
   { id: "s-mbti-n", dim: "mbti", key: "N", dir: "high", q: "strengths", title: "Sees patterns and possibilities", detail: "Intuition {v}% — you connect ideas that look unrelated.", action: "Spend an hour mapping a problem you have not solved yet." },
   { id: "s-mbti-s", dim: "mbti", key: "S", dir: "high", q: "strengths", title: "Practical and concrete", detail: "Sensing {v}% — you prefer what works over what sounds good.", action: "Turn one abstract debate into a testable next step." },
   { id: "s-mbti-t", dim: "mbti", key: "T", dir: "high", q: "strengths", title: "Logical and objective", detail: "Thinking {v}% — you reason through decisions without sentiment.", action: "Bring the decision criteria to a conversation that is drifting." },
@@ -253,6 +253,23 @@ const SWOT_RULES = [
   { id: "t-en-8", dim: "ennea", key: "8", dir: "top", q: "threats", title: "Power struggles", detail: "Type 8 ({v}%) — force applied to the wrong person becomes a personal fight.", action: "Give one decision away instead of winning it." },
   { id: "t-en-9", dim: "ennea", key: "9", dir: "top", q: "threats", title: "Delayed decisions build resentment", detail: "Type 9 ({v}%) — the quiet path can turn into a slow conflict.", action: "Say the decision out loud, even if it is not perfect." }
 ];
+
+/* SWOT engine contract.
+   SWOT_MAX_ITEMS caps how many items a quadrant may show.
+   SWOT_FLAT_BAND is the neutral band (inclusive) around 50; a profile where
+   every score sits inside it has no dominant signal and falls back to the
+   balanced profile in all four quadrants.
+   SWOT_QUADRANTS is the canonical quadrant order.
+   SWOT_BALANCED_ACTION supplies the "next step" copy for a balanced quadrant. */
+const SWOT_MAX_ITEMS = 3;
+const SWOT_FLAT_BAND = 40;
+const SWOT_QUADRANTS = ["strengths", "weaknesses", "opportunities", "threats"];
+const SWOT_BALANCED_ACTION = {
+  strengths: "Lean on the traits that already come easily, and name one to build on.",
+  weaknesses: "Pick one small weakness and give it a single weekly experiment.",
+  opportunities: "Look for a low-risk place to test one new idea this month.",
+  threats: "Name the biggest risk out loud so it stops running in the background."
+};
 
 const GROUPS = {
   mbti: ["EI", "SN", "TF", "JP"],
