@@ -669,9 +669,16 @@ function renderResults() {
     barRow("F ←→ T", r.mbti.dich.TF), barRow("P ←→ J", r.mbti.dich.JP)
   ].join("");
   const oceanTop = Object.keys(r.ocean).sort((a, b) => r.ocean[b] - r.ocean[a])[0];
-  const overview = computeOverview(r);
   const swot = computeSwot(r);
-  const quad = (cls, icon, title, items) => `<div class="swot ${cls}"><h3><span aria-hidden="true">${icon}</span> ${title}</h3><ul>${items.map(i => `<li><b>${i.title}</b><span>${i.detail}</span></li>`).join("")}</ul></div>`;
+  const ov = typeof buildOverview === "function"
+    ? buildOverview(r, swot)
+    : { summary: computeOverview(r), balance: "", stats: [], moves: [] };
+  const overview = ov.summary || computeOverview(r);
+  const strengthMeter = (v) => {
+    const n = Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 0;
+    return `<div class="swot-meter"><div class="bar pct"><div data-w="${n.toFixed(1)}" style="--w:${(n / 100).toFixed(4)}"></div></div><span class="swot-meter-val">${PCT_FMT.format(n / 100)}</span></div>`;
+  };
+  const quad = (cls, icon, title, items) => `<div class="swot ${cls}"><h3><span aria-hidden="true">${icon}</span> ${title}</h3><ul>${items.map(i => `<li><b>${i.title}</b><span>${i.detail}</span>${strengthMeter(i.strength)}${i.action ? `<em class="next-step">Next step: ${i.action}</em>` : ""}</li>`).join("")}</ul></div>`;
   document.getElementById("app").innerHTML = `
     <div class="hero">
       <span class="emoji" aria-hidden="true">🎉</span>
@@ -692,6 +699,9 @@ function renderResults() {
     <div class="card">
       <h2>Overview</h2>
       <p>${overview}</p>
+      ${ov.balance ? `<p class="ov-balance">${ov.balance}</p>` : ""}
+      ${(ov.stats || []).length ? `<div class="ov-stats">${ov.stats.map(s => `<div class="ov-stat"><span class="ov-stat-label">${s.label}</span><b class="ov-stat-value">${s.value}</b>${s.note ? `<span class="ov-stat-note">${s.note}</span>` : ""}</div>`).join("")}</div>` : ""}
+      ${(ov.moves || []).length ? `<h2 style="margin-top:18px">Next Moves</h2><ul class="ov-moves">${ov.moves.map(m => `<li><span class="move-tag move-${String(m.tag || "").toLowerCase()}">${m.tag}</span><span>${m.text}</span></li>`).join("")}</ul>` : ""}
       <h2 style="margin-top:16px">SWOT Snapshot</h2>
       <p class="muted" style="font-size:.82rem;margin-bottom:6px">Internal factors on top, external below · helpful left, harmful right. Derived from your six model scores.</p>
       <div class="swot-matrix">
@@ -760,7 +770,7 @@ function renderResults() {
   document.getElementById("reviewBtn").onclick = () => { reviewReturn = "results"; renderReview(); };
   document.getElementById("printBtn").onclick = () => window.print();
   document.getElementById("exportBtn").onclick = () => {
-    const data = { date: new Date().toISOString(), answers, results: r, overview, swot, summary: summaryText(r) };
+    const data = { date: new Date().toISOString(), answers, results: r, overview, overviewDetail: ov, swot, summary: summaryText(r) };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -793,5 +803,5 @@ function init() {
 
 if (typeof document !== "undefined") init();
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = { QUESTIONS, GROUPS, computeResults, computeOverview, computeSwot, encodeAnswers, decodeAnswers, summaryText };
+  module.exports = { QUESTIONS, GROUPS, computeResults, computeOverview, computeSwot, buildOverview, encodeAnswers, decodeAnswers, summaryText };
 }

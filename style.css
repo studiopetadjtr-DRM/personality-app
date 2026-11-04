@@ -164,6 +164,28 @@ details.drivers li { margin: 3px 0; }
 .swot.w { border-top: 3px solid #ffb86b; } .swot.w h3 { color: #ffb86b; }
 .swot.o { border-top: 3px solid var(--accent2); } .swot.o h3 { color: var(--accent2); }
 .swot.t { border-top: 3px solid #ff7c7c; } .swot.t h3 { color: #ff7c7c; }
+.swot li + li { border-top: 1px solid #262c4d; padding-top: 7px; }
+.swot-meter { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.swot-meter .bar { flex: 1; height: 6px; }
+.swot-meter-val { font-size: .7rem; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
+.next-step { display: block; margin-top: 5px; font-size: .76rem; color: var(--accent2); font-style: normal; }
+.next-step::before { content: "→ "; }
+.ov-balance { color: var(--muted); font-size: .9rem; margin-top: 8px; }
+.ov-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 14px; }
+.ov-stat { background: var(--panel2); border: 1px solid #2c3358; border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.ov-stat-label { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+.ov-stat-value { display: block; font-size: 1.05rem; color: var(--accent2); margin: 3px 0; overflow-wrap: break-word; }
+.ov-stat-note { display: block; font-size: .74rem; color: var(--muted); }
+.ov-moves { list-style: none; margin: 8px 0 0; }
+.ov-moves li { display: flex; gap: 10px; align-items: baseline; margin: 8px 0; font-size: .88rem; line-height: 1.4; }
+.move-tag {
+  flex: 0 0 auto; font-size: .66rem; text-transform: uppercase; letter-spacing: .06em;
+  padding: 3px 8px; border-radius: 99px; background: #2c3358; color: var(--text);
+}
+.move-opportunity { background: rgba(45, 212, 191, .16); color: var(--accent2); }
+.move-strength { background: rgba(74, 222, 128, .16); color: var(--good); }
+.move-weakness { background: rgba(255, 184, 107, .16); color: #ffb86b; }
+.move-threat { background: rgba(255, 124, 124, .16); color: #ff7c7c; }
 @media (max-width: 560px) {
   .answers { grid-template-columns: 1fr; }
   .ans { padding: 12px; }
@@ -172,6 +194,8 @@ details.drivers li { margin: 3px 0; }
   .rev-a { grid-column: 2; white-space: normal; }
   .swot-matrix { grid-template-columns: 1fr; }
   .swot-corner, .swot-axis { display: none; }
+  .ov-stats { grid-template-columns: 1fr 1fr; }
+  .ov-moves li { flex-direction: column; gap: 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -203,4 +227,10 @@ details.drivers li { margin: 3px 0; }
   .swot { background: #fff; color: #000; border: 1px solid #ccc; border-top-width: 3px; }
   .swot h3 { color: #000; }
   .swot li span, .swot-axis, .swot-corner { color: #444; }
+  .swot li + li { border-top-color: #ddd; }
+  .next-step { color: #333; }
+  .ov-stat { background: #fff; border-color: #ccc; }
+  .ov-stat-value { color: #000; }
+  .ov-stat-label, .ov-stat-note, .ov-balance { color: #444; }
+  .move-tag { background: #eee; color: #000; }
 }
