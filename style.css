@@ -56,7 +56,7 @@ h2 { font-size: 1.15rem; margin-bottom: 6px; text-wrap: balance; }
 }
 .btn:hover { filter: brightness(1.12); }
 .btn:active { transform: scale(.97); }
-.btn:focus-visible, .ans:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+.btn:focus-visible, .ans:focus-visible, .rev-row:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
 .btn.secondary { background: #2c3358; }
 .btn.ghost { background: transparent; border: 1px solid #3a4270; color: var(--muted); }
 progress.progress {
@@ -121,13 +121,32 @@ progress.progress::-moz-progress-bar {
 .bar.pct > div { background: linear-gradient(90deg, var(--accent2), var(--good)); }
 .tag { display: inline-block; background: #2c3358; border-radius: 99px; padding: 4px 12px; font-size: .78rem; margin: 3px 4px 0 0; }
 .result-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-.drivers { font-size: .78rem; margin-top: 8px; }
+.drivers { font-size: .78rem; margin-top: 8px; color: var(--muted); }
+details.drivers summary { cursor: pointer; }
+details.drivers ul { margin: 6px 0 0 18px; }
+details.drivers li { margin: 3px 0; }
+.rev-list { display: flex; flex-direction: column; gap: 6px; }
+.rev-row {
+  display: grid; grid-template-columns: 34px 1fr auto; gap: 10px; align-items: center;
+  width: 100%; text-align: left;
+  background: var(--panel2); color: var(--text);
+  border: 1px solid #333b66; border-radius: 10px;
+  padding: 10px 12px; font-size: .9rem; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: border-color .12s ease;
+}
+.rev-row:hover { border-color: var(--accent); }
+.rev-row.answered { border-color: var(--accent2); background: #1d2344; }
+.rev-num { color: var(--muted); font-variant-numeric: tabular-nums; }
+.rev-a { color: var(--accent2); font-size: .78rem; white-space: nowrap; }
 .kbd { font-size: .72rem; color: var(--muted); margin-top: 14px; }
 .btnrow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 22px; }
 @media (max-width: 560px) {
   .answers { grid-template-columns: 1fr; }
   .ans { padding: 12px; }
   .bar-row { grid-template-columns: 96px 1fr 44px; }
+  .rev-row { grid-template-columns: 28px 1fr; }
+  .rev-a { grid-column: 2; white-space: normal; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
@@ -153,4 +172,7 @@ progress.progress::-moz-progress-bar {
   .bar > div { background: #888 !important; width: var(--w, 50%) !important; }
   .tag { background: #eee; color: #000; }
   .model-chip { background: #fff; color: #000; border-color: #ccc; }
+  details.drivers ul { display: block; }
+  .rev-row { background: #fff; color: #000; border-color: #ccc; }
+  .rev-num, .rev-a { color: #444; }
 }

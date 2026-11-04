@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { QUESTIONS, GROUPS, computeResults, encodeAnswers, decodeAnswers } = require("../app.js");
+const { QUESTIONS, GROUPS, computeResults, encodeAnswers, decodeAnswers, summaryText } = require("../app.js");
 
 test("60 questions, all weights reference valid groups/keys", () => {
   assert.equal(QUESTIONS.length, 60);
@@ -68,4 +68,38 @@ test("drivers reference real question indices", () => {
       for (const i of r.drivers[g][k]) assert.ok(i >= 0 && i < QUESTIONS.length);
     }
   }
+});
+
+test("partial answers: nulls are ignored and results stay in range", () => {
+  const ans = new Array(QUESTIONS.length).fill(null);
+  ans[0] = 5; ans[9] = 1; ans[59] = 3;
+  const r = computeResults(ans);
+  assert.match(r.mbti.type, /^[EI][SN][TF][JP]-[AT]$/);
+  for (const k of GROUPS.ocean) assert.ok(r.ocean[k] >= 0 && r.ocean[k] <= 100);
+  for (const k of GROUPS.ennea) assert.ok(r.ennea.scores[k] >= 0 && r.ennea.scores[k] <= 100);
+  for (const g in r.drivers) for (const k in r.drivers[g]) for (const i of r.drivers[g][k]) assert.ok(i >= 0 && i < QUESTIONS.length);
+});
+
+test("summaryText mentions all six models", () => {
+  const r = computeResults(new Array(QUESTIONS.length).fill(4));
+  const s = summaryText(r);
+  for (const needle of ["MBTI:", "Socionics:", "Enneagram:", "DISC:", "SLOAN:", "OCEAN:"]) {
+    assert.ok(s.includes(needle), `missing ${needle}`);
+  }
+  assert.ok(s.includes(r.mbti.type));
+});
+
+test("enneagram wing is always adjacent to the top type", () => {
+  for (const v of [1, 2, 3, 4, 5]) {
+    const r = computeResults(new Array(QUESTIONS.length).fill(v));
+    const top = Number(r.ennea.top);
+    const wing = Number(r.ennea.wing);
+    const diff = Math.min((wing - top + 9) % 9, (top - wing + 9) % 9);
+    assert.equal(diff, 1, `top=${top} wing=${wing}`);
+  }
+});
+
+test("encode/decode round-trips all-null answers", () => {
+  const ans = new Array(QUESTIONS.length).fill(null);
+  assert.deepEqual(decodeAnswers(encodeAnswers(ans)), ans);
 });

@@ -22,9 +22,10 @@ npx serve .        # or: python -m http.server
 ## Features
 
 - Answers auto-save in `localStorage`; quiz position syncs to `?q=N`
-- Results are shareable: answers are encoded in the URL hash (`#a=…`) — Copy Link / Copy Summary buttons on the results page
-- JSON export / import of answers and results
-- Each result card shows the top driving questions ("Driven by Q#…")
+- Results are shareable: answers are encoded in the URL hash (`#a=…`) — Copy Link / Copy Summary buttons on the results page (with a fallback for non-HTTPS contexts)
+- Review Answers screen: jump to any question from the quiz or results and change it; results recompute live
+- Results show how many questions were answered (partial runs are flagged), plus Print and JSON export
+- Each result card shows the top driving questions ("Driven by Q#…") in an expandable, touch/screen-reader-friendly list
 - Keyboard: `1–5` to answer, `Backspace` to go back
 - Accessible: skip link, semantic `<progress>`, `aria-live`, focus management, `prefers-reduced-motion`, dark `color-scheme`
 - Print stylesheet for results

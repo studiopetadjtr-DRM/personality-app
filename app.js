@@ -153,6 +153,7 @@ const STORE_KEY = "allinone-personality-v1";
 
 let answers = new Array(QUESTIONS.length).fill(null);
 let idx = 0;
+let reviewReturn = "start";
 
 function computeResults(ans) {
   const acc = {};
@@ -313,7 +314,7 @@ function renderQuestion() {
   document.getElementById("app").innerHTML = `
     <div class="card">
       <h1 class="sr-only">Question ${idx + 1} of ${QUESTIONS.length}</h1>
-      <div class="muted">Question ${idx + 1} / ${QUESTIONS.length}</div>
+      <div class="muted">Question ${idx + 1} / ${QUESTIONS.length} · ${answers.filter(a => a !== null).length} answered</div>
       <progress class="progress" max="${QUESTIONS.length}" value="${idx + 1}" aria-label="Quiz progress: question ${idx + 1} of ${QUESTIONS.length}"></progress>
       <div class="qtext">${q.q}</div>
       <div class="answers">
@@ -321,13 +322,43 @@ function renderQuestion() {
       </div>
       <div class="navrow">
         <button class="btn ghost" id="backBtn" ${idx === 0 ? "disabled" : ""}>← Back</button>
-        <button class="btn secondary" id="skipBtn">Skip</button>
+        <span style="display:flex;gap:10px">
+          <button class="btn ghost" id="reviewBtn">☰ All questions</button>
+          <button class="btn secondary" id="skipBtn">Skip</button>
+        </span>
       </div>
       <p class="kbd">Keys 1–5 = answer · Backspace = back</p>
     </div>`;
   document.querySelectorAll(".ans").forEach(b => b.onclick = () => answer(Number(b.dataset.v)));
   document.getElementById("backBtn").onclick = () => { if (idx > 0) { idx--; renderQuestion(); } };
   document.getElementById("skipBtn").onclick = () => advance();
+  document.getElementById("reviewBtn").onclick = () => { reviewReturn = "question"; renderReview(); };
+  focusTop();
+}
+
+function renderReview() {
+  const answered = answers.filter(a => a !== null).length;
+  const rows = QUESTIONS.map((q, i) => {
+    const a = answers[i];
+    return `<button class="rev-row${a === null ? "" : " answered"}" data-i="${i}">
+      <span class="rev-num">${i + 1}</span>
+      <span class="rev-q">${q.q}</span>
+      <span class="rev-a">${a === null ? "— skipped" : a + " · " + ANSWER_LABELS[a - 1]}</span>
+    </button>`;
+  }).join("");
+  document.getElementById("app").innerHTML = `
+    <div class="card">
+      <h1>Review Answers</h1>
+      <p class="muted" style="margin:6px 0 14px">${answered} of ${QUESTIONS.length} answered — tap a question to change it.</p>
+      <div class="rev-list">${rows}</div>
+      <div class="navrow">
+        <button class="btn ghost" id="backBtn">← Back</button>
+        <button class="btn" id="resultsBtn">View Results →</button>
+      </div>
+    </div>`;
+  document.querySelectorAll(".rev-row").forEach(b => b.onclick = () => { idx = Number(b.dataset.i); renderQuestion(); });
+  document.getElementById("backBtn").onclick = () => { if (reviewReturn === "results") renderResults(); else renderQuestion(); };
+  document.getElementById("resultsBtn").onclick = () => renderResults();
   focusTop();
 }
 
@@ -345,13 +376,14 @@ function save() { localStorage.setItem(STORE_KEY, JSON.stringify(answers)); }
 function renderResults() {
   history.replaceState(null, "", "#a=" + encodeAnswers(answers));
   const r = computeResults(answers);
+  const answered = answers.filter(a => a !== null).length;
   const drv = (g, keys) => {
     const set = new Set();
     keys.forEach(k => (r.drivers[g][k] || []).forEach(i => set.add(i)));
     const ids = [...set].sort((a, b) => a - b).slice(0, 3);
     if (!ids.length) return "";
-    const tip = ids.map(i => `Q${i + 1}: ${QUESTIONS[i].q}`).join("\n").replace(/"/g, "&quot;");
-    return `<p class="drivers muted" title="${tip}">Driven by ${ids.map(i => "Q" + (i + 1)).join(" · ")} — hover for the questions</p>`;
+    const items = ids.map(i => `<li><b>Q${i + 1}</b> — ${QUESTIONS[i].q}</li>`).join("");
+    return `<details class="drivers"><summary>Driven by ${ids.map(i => "Q" + (i + 1)).join(" · ")} — tap to see the questions</summary><ul>${items}</ul></details>`;
   };
   const enneaTop3 = r.ennea.top3.map(k => barRow(`${k} — ${ENNEA_INFO[k][0]}`, r.ennea.scores[k], "pct")).join("");
   const discBars = GROUPS.disc.map(k => barRow(`${k} — ${DISC_INFO[k][0]}`, r.disc.scores[k], "pct")).join("");
@@ -366,7 +398,7 @@ function renderResults() {
     <div class="hero">
       <span class="emoji" aria-hidden="true">🎉</span>
       <h1>Your Results</h1>
-      <p class="muted" style="margin-top:6px">All six models from one quiz</p>
+      <p class="muted" style="margin-top:6px">All six models from one quiz · based on ${answered}/${QUESTIONS.length} answers${answered < QUESTIONS.length ? " (some skipped)" : ""}</p>
     </div>
     <div class="card center">
       <div class="bigtype" translate="no">${r.mbti.type}</div>
@@ -389,21 +421,40 @@ function renderResults() {
     </div>
     <div class="btnrow">
       <button class="btn" id="againBtn">↻ Retake Quiz</button>
+      <button class="btn secondary" id="reviewBtn">📝 Review Answers</button>
       <button class="btn secondary" id="copyLinkBtn">🔗 Copy Link</button>
       <button class="btn secondary" id="copySumBtn">📋 Copy Summary</button>
       <button class="btn secondary" id="exportBtn">⬇ Export JSON</button>
+      <button class="btn secondary" id="printBtn">🖨 Print</button>
     </div>`;
   requestAnimationFrame(() => {
     document.querySelectorAll(".bar > div").forEach(d => { d.style.width = d.dataset.w + "%"; });
   });
   document.getElementById("againBtn").onclick = () => { if (confirm("Retake the quiz? Your saved answers will be cleared.")) { answers = new Array(QUESTIONS.length).fill(null); idx = 0; localStorage.removeItem(STORE_KEY); renderStart(); } };
   const flash = (btn, msg) => { const t = btn.textContent; btn.textContent = msg; setTimeout(() => { btn.textContent = t; }, 1500); };
+  const legacyCopy = (txt) => {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = txt;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      const ok = document.execCommand("copy");
+      ta.remove();
+      return ok;
+    } catch (e) { return false; }
+  };
   const copyText = (txt, btn) => {
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(() => flash(btn, "Copied ✓"), () => flash(btn, "Copy failed"));
-    else flash(btn, "Copy failed");
+    const done = () => flash(btn, "Copied ✓");
+    const fail = () => flash(btn, "Copy failed");
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, () => legacyCopy(txt) ? done() : fail());
+    else legacyCopy(txt) ? done() : fail();
   };
   document.getElementById("copyLinkBtn").onclick = (e) => copyText(location.href, e.target);
   document.getElementById("copySumBtn").onclick = (e) => copyText(summaryText(r), e.target);
+  document.getElementById("reviewBtn").onclick = () => { reviewReturn = "results"; renderReview(); };
+  document.getElementById("printBtn").onclick = () => window.print();
   document.getElementById("exportBtn").onclick = () => {
     const data = { date: new Date().toISOString(), answers, results: r, summary: summaryText(r) };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
