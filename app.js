@@ -511,7 +511,7 @@ function barRow(label, p, cls) {
 }
 
 function focusTop() {
-  const el = document.querySelector("#app .qtext, #app h1");
+  const el = document.querySelector("#app .qtext") || document.querySelector("#app h1");
   if (el) { el.tabIndex = -1; el.focus({ preventScroll: true }); }
 }
 
