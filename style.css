@@ -25,6 +25,7 @@ body {
 h1 { font-size: clamp(1.6rem, 4vw, 2.1rem); line-height: 1.2; text-wrap: balance; }
 h2 { font-size: 1.15rem; margin-bottom: 6px; text-wrap: balance; }
 h3 { text-wrap: balance; }
+h1, h2, h3 { scroll-margin-top: 24px; }
 .muted { color: var(--muted); }
 .center { text-align: center; }
 .sr-only {
@@ -76,7 +77,6 @@ progress.progress::-webkit-progress-bar { background: #262c4d; border-radius: 99
 progress.progress::-webkit-progress-value {
   background: linear-gradient(90deg, var(--accent), var(--accent2));
   border-radius: 99px;
-  transition: width .25s ease;
 }
 progress.progress::-moz-progress-bar {
   background: linear-gradient(90deg, var(--accent), var(--accent2));
@@ -109,8 +109,7 @@ progress.progress::-moz-progress-bar {
 .model-chip .icon { margin-right: 6px; }
 .bigtype {
   font-size: 2.6rem; font-weight: 800; letter-spacing: 2px;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text; background-clip: text; color: transparent;
+  color: var(--accent2);
 }
 .bar-row {
   display: grid; grid-template-columns: 130px minmax(0, 1fr) 52px; align-items: center; gap: 10px;
@@ -119,9 +118,10 @@ progress.progress::-moz-progress-bar {
 .bar-row > span:first-child { overflow-wrap: break-word; }
 .bar { height: 12px; background: #262c4d; border-radius: 99px; overflow: hidden; }
 .bar > div {
-  height: 100%; border-radius: 99px; width: 0;
+  height: 100%; width: 100%;
+  transform: scaleX(0); transform-origin: left center;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
-  transition: width .6s ease;
+  transition: transform .6s ease;
 }
 .bar.pct > div { background: linear-gradient(90deg, var(--accent2), var(--good)); }
 .tag { display: inline-block; background: #2c3358; border-radius: 99px; padding: 4px 12px; font-size: .78rem; margin: 3px 4px 0 0; }
@@ -192,9 +192,9 @@ details.drivers li { margin: 3px 0; }
   .btn, .btnrow, .navrow, .kbd, .skip-link, progress.progress { display: none !important; }
   .card { background: #fff; color: #000; border: 1px solid #ccc; box-shadow: none; }
   .muted, .drivers { color: #444; }
-  .bigtype { color: #000; background: none; -webkit-text-fill-color: #000; }
-  .bar, .bar > div { background: #ddd; }
-  .bar > div { background: #888 !important; width: var(--w, 50%) !important; }
+  .bigtype { color: #000; }
+  .bar { background: #ddd; }
+  .bar > div { background: #888 !important; transform: scaleX(var(--w, .5)) !important; }
   .tag { background: #eee; color: #000; }
   .model-chip { background: #fff; color: #000; border-color: #ccc; }
   details.drivers ul { display: block; }

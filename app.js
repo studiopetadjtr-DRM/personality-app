@@ -507,12 +507,17 @@ function summaryText(r) {
 
 const PCT_FMT = new Intl.NumberFormat(undefined, { style: "percent", maximumFractionDigits: 0 });
 function barRow(label, p, cls) {
-  return `<div class="bar-row"><span>${label}</span><div class="bar ${cls || ""}"><div data-w="${p.toFixed(1)}"></div></div><span>${PCT_FMT.format(p / 100)}</span></div>`;
+  return `<div class="bar-row"><span>${label}</span><div class="bar ${cls || ""}"><div data-w="${p.toFixed(1)}" style="--w:${(p / 100).toFixed(4)}"></div></div><span>${PCT_FMT.format(p / 100)}</span></div>`;
 }
 
 function focusTop() {
   const el = document.querySelector("#app .qtext, #app h1");
   if (el) { el.tabIndex = -1; el.focus({ preventScroll: true }); }
+}
+
+function announce(msg) {
+  const el = document.getElementById("appStatus");
+  if (el) el.textContent = msg;
 }
 
 function renderStart() {
@@ -521,7 +526,7 @@ function renderStart() {
   document.getElementById("app").innerHTML = `
     <div class="hero">
       <span class="emoji" aria-hidden="true">🧠</span>
-      <h1>All-in-One Personality Test</h1>
+      <h1 translate="no">All-in-One Personality Test</h1>
       <p class="muted" style="margin-top:8px">Answer ${QUESTIONS.length} questions once — get results for all six models at the same time.</p>
     </div>
     <div class="card">
@@ -602,6 +607,7 @@ function renderQuestion() {
   document.getElementById("skipBtn").onclick = () => advance();
   document.getElementById("reviewBtn").onclick = () => { reviewReturn = "question"; renderReview(); };
   focusTop();
+  announce(`Question ${idx + 1} of ${QUESTIONS.length}`);
 }
 
 function renderReview() {
@@ -628,6 +634,7 @@ function renderReview() {
   document.getElementById("backBtn").onclick = () => { if (reviewReturn === "results") renderResults(); else renderQuestion(); };
   document.getElementById("resultsBtn").onclick = () => renderResults();
   focusTop();
+  announce(`Review answers: ${answered} of ${QUESTIONS.length} answered`);
 }
 
 function answer(v) {
@@ -714,21 +721,19 @@ function renderResults() {
       <button class="btn secondary" id="copySumBtn"><span class="btn-ico" aria-hidden="true">📋</span><span class="btn-label">Copy Summary</span></button>
       <button class="btn secondary" id="exportBtn"><span class="btn-ico" aria-hidden="true">⬇</span><span class="btn-label">Export JSON</span></button>
       <button class="btn secondary" id="printBtn"><span class="btn-ico" aria-hidden="true">🖨</span><span class="btn-label">Print</span></button>
-    </div>
-    <p class="sr-only" id="copyStatus" role="status" aria-live="polite"></p>`;
+    </div>`;
   requestAnimationFrame(() => {
-    document.querySelectorAll(".bar > div").forEach(d => { d.style.width = d.dataset.w + "%"; });
+    document.querySelectorAll(".bar > div").forEach(d => { d.style.transform = "scaleX(" + (Number(d.dataset.w) / 100) + ")"; });
   });
   document.getElementById("againBtn").onclick = () => { if (confirm("Retake the quiz? Your saved answers will be cleared.")) { answers = new Array(QUESTIONS.length).fill(null); idx = 0; localStorage.removeItem(STORE_KEY); renderStart(); } };
-  const status = document.getElementById("copyStatus");
   const flash = (btn, msg) => {
     const label = btn.querySelector(".btn-label");
     const original = label ? label.textContent : "";
     if (label) label.textContent = msg;
-    if (status) status.textContent = msg;
+    announce(msg);
     setTimeout(() => {
       if (label) label.textContent = original;
-      if (status) status.textContent = "";
+      announce("");
     }, 1500);
   };
   const legacyCopy = (txt) => {
@@ -764,6 +769,7 @@ function renderResults() {
     URL.revokeObjectURL(a.href);
   };
   focusTop();
+  announce(`Results ready: ${r.mbti.type}, based on ${answered} of ${QUESTIONS.length} answers`);
 }
 
 function init() {

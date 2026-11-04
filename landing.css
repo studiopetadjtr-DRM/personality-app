@@ -69,6 +69,8 @@ a { color: var(--accent2); }
   border-bottom: 1px solid var(--line);
 }
 
+.section { scroll-margin-top: 84px; }
+
 .brand {
   display: inline-flex;
   align-items: center;
