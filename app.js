@@ -337,7 +337,8 @@ function computeOverview(r) {
   const e = r.mbti.letters[0] === "E";
   const open = r.ocean.O >= 60;
   const archetype = e && open ? "an idea-driven collaborator" : e ? "a practical networker" : open ? "a reflective innovator" : "a steady specialist";
-  return `You come across as ${r.mbti.type} (${r.mbti.info[0]}), motivated by Enneagram ${r.ennea.top}w${r.ennea.wing} (${ENNEA_INFO[r.ennea.top][0]}), with a ${DISC_INFO[r.disc.top][0]} workplace style and a ${SLOAN_INFO[r.sloan.top][0]} team profile. ` +
+  const art = (w) => (/^[aeiou]/i.test(w) ? "an" : "a");
+  return `You come across as ${r.mbti.type} (${r.mbti.info[0]}), motivated by Enneagram ${r.ennea.top}w${r.ennea.wing} (${ENNEA_INFO[r.ennea.top][0]}), with ${art(DISC_INFO[r.disc.top][0])} ${DISC_INFO[r.disc.top][0]} workplace style and ${art(SLOAN_INFO[r.sloan.top][0])} ${SLOAN_INFO[r.sloan.top][0]} team profile. ` +
     `Your standout Big Five trait is ${OCEAN_LABELS[top]} (${p(r.ocean[top])}) and your lowest is ${OCEAN_LABELS[low]} (${p(r.ocean[low])}) — overall, ${archetype}.`;
 }
 
@@ -386,6 +387,95 @@ function computeSwot(r) {
     return items.length ? items : [{ title: "Balanced profile", detail: "No extreme scores — nothing dominates this quadrant." }];
   };
   return { strengths: pick(strengths), weaknesses: pick(weaknesses), opportunities: pick(opportunities), threats: pick(threats) };
+}
+
+const MBTI_POLES = { E: ["EI", 1], I: ["EI", -1], N: ["SN", 1], S: ["SN", -1], F: ["TF", 1], T: ["TF", -1], J: ["JP", 1], P: ["JP", -1] };
+
+function swotRaw(r, rule) {
+  if (rule.dim === "ocean") return r.ocean[rule.key];
+  if (rule.dim === "disc") return r.disc.scores[rule.key];
+  if (rule.dim === "sloan") return r.sloan.scores[rule.key];
+  if (rule.dim === "ennea") return r.ennea.scores[rule.key];
+  if (rule.dim === "mbti") {
+    const [dim, sign] = MBTI_POLES[rule.key];
+    const v = r.mbti.dich[dim];
+    return sign > 0 ? v : 100 - v;
+  }
+  return 50;
+}
+
+function swotStrength(r, rule) {
+  if (rule.dir === "top") return swotRaw(r, rule);
+  const raw = swotRaw(r, rule);
+  return rule.dir === "low" ? 100 - raw : raw;
+}
+
+function swotActive(r, rule) {
+  if (rule.dir === "top") {
+    if (rule.dim === "disc") return r.disc.top === rule.key;
+    if (rule.dim === "sloan") return r.sloan.top === rule.key;
+    if (rule.dim === "ennea") return r.ennea.top === rule.key;
+    return false;
+  }
+  return swotStrength(r, rule) >= 60;
+}
+
+function computeSwot(r) {
+  const out = { strengths: [], weaknesses: [], opportunities: [], threats: [] };
+  for (const rule of SWOT_RULES) {
+    if (!swotActive(r, rule)) continue;
+    const raw = swotRaw(r, rule);
+    out[rule.q].push({
+      id: rule.id,
+      title: rule.title,
+      detail: rule.detail.replace("{v}", Math.round(raw)),
+      action: rule.action,
+      strength: Math.round(swotStrength(r, rule)),
+      primary: rule.dir === "top"
+    });
+  }
+  for (const q of Object.keys(out)) {
+    const list = out[q].sort((a, b) => b.strength - a.strength);
+    const traits = list.filter(i => !i.primary);
+    const primaries = list.filter(i => i.primary);
+    const picked = traits.slice(0, 2).concat(primaries.slice(0, 2));
+    for (const item of list) {
+      if (picked.length >= 4) break;
+      if (!picked.includes(item)) picked.push(item);
+    }
+    out[q] = picked.sort((a, b) => b.strength - a.strength);
+  }
+  return out;
+}
+
+function buildOverview(r, swot) {
+  const oceanTop = Object.keys(r.ocean).sort((a, b) => r.ocean[b] - r.ocean[a])[0];
+  const risk = { O: 100 - r.ocean.O, C: 100 - r.ocean.C, E: 100 - r.ocean.E, A: 100 - r.ocean.A, N: r.ocean.N };
+  const oceanRisk = Object.keys(risk).sort((a, b) => risk[b] - risk[a])[0];
+  const avg = list => (list.length ? list.reduce((s, i) => s + i.strength, 0) / list.length : 0);
+  const sAvg = avg(swot.strengths);
+  const wAvg = avg(swot.weaknesses);
+  let balance;
+  if (sAvg - wAvg >= 8) balance = "Strengths outweigh weaknesses in this profile.";
+  else if (wAvg - sAvg >= 8) balance = "Weaknesses outweigh strengths — the growth edge sits in the lower-left quadrant.";
+  else balance = "Strengths and weaknesses are close to balanced.";
+  const summary =
+    `You read as ${r.mbti.type} — ${r.mbti.info[0]}. ${r.mbti.info[1]} ` +
+    `Your clearest signal is ${OCEAN_LABELS[oceanTop]} at ${Math.round(r.ocean[oceanTop])}%, and your watch-out is ${OCEAN_LABELS[oceanRisk]} at ${Math.round(r.ocean[oceanRisk])}%. ` +
+    `At work you come across as ${DISC_INFO[r.disc.top][0]} (${r.disc.top}), your team profile is ${SLOAN_INFO[r.sloan.top][0]} (${r.sloan.top}), and your core drive is Enneagram ${r.ennea.top}w${r.ennea.wing} — ${ENNEA_INFO[r.ennea.top][0]}.`;
+  const stats = [
+    { label: "Top trait", value: OCEAN_LABELS[oceanTop], note: `${Math.round(r.ocean[oceanTop])}% openness to experience` },
+    { label: "Watch-out", value: OCEAN_LABELS[oceanRisk], note: `${Math.round(r.ocean[oceanRisk])}% — most likely to cost you` },
+    { label: "Work style", value: `${r.disc.top} · ${DISC_INFO[r.disc.top][0]}`, note: DISC_INFO[r.disc.top][1] },
+    { label: "Core drive", value: `${r.ennea.top}w${r.ennea.wing} · ${ENNEA_INFO[r.ennea.top][0]}`, note: ENNEA_INFO[r.ennea.top][1] }
+  ];
+  const moves = [];
+  const pushMove = (q, tag) => { const it = swot[q][0]; if (it) moves.push({ tag, text: it.action }); };
+  pushMove("opportunities", "Opportunity");
+  pushMove("weaknesses", "Weakness");
+  pushMove("threats", "Threat");
+  if (moves.length < 3) pushMove("strengths", "Strength");
+  return { summary, balance, stats, moves };
 }
 
 function encodeAnswers(ans) {
