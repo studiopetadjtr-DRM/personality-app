@@ -42,6 +42,12 @@ Scoring logic is pure and exported for Node:
 node --test tests/scoring.test.js
 ```
 
+## Documentation
+
+Scoring functions in `app.js` are documented with JSDoc:
+- `computeResults`, `computeOverview`, `computeSwot`, `buildOverview`
+- `encodeAnswers`, `decodeAnswers`, `summaryText`
+
 ## Files
 
 - `index.html` — quiz entry point

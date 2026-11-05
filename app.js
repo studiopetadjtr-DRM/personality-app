@@ -287,6 +287,11 @@ let answers = new Array(QUESTIONS.length).fill(null);
 let idx = 0;
 let reviewReturn = "start";
 
+/**
+ * Compute all six model results from an answers array.
+ * @param {Array<number|null>} ans - Answers for each question, 1-5 or null for skipped.
+ * @returns {Object} Results with mbti, ocean, ennea, soc, disc, sloan and drivers.
+ */
 function computeResults(ans) {
   const acc = {};
   for (const g in GROUPS) {
@@ -306,11 +311,13 @@ function computeResults(ans) {
       }
     }
   });
+  // Convert raw weighted scores to 0-100 percentages, centered at 50
   const pct = (g, k) => {
     const s = acc[g][k];
     const tot = s.pos + s.neg;
     return tot === 0 ? 50 : Math.max(0, Math.min(100, 50 + (s.raw / tot) * 50));
   };
+  // Identify top 3 driving questions per dimension for explainability
   const drivers = {};
   for (const g in GROUPS) {
     drivers[g] = {};
@@ -347,6 +354,11 @@ function computeResults(ans) {
   };
 }
 
+/**
+ * Generate a narrative overview paragraph from results.
+ * @param {Object} r - Results object from computeResults.
+ * @returns {string} Human-readable overview.
+ */
 function computeOverview(r) {
   const p = (v) => Math.round(v) + "%";
   const ranked = Object.keys(r.ocean).sort((a, b) => r.ocean[b] - r.ocean[a]);
@@ -380,12 +392,19 @@ function swotStrength(r, rule) {
   return rule.dir === "low" ? 100 - raw : raw;
 }
 
+/**
+ * Determine if a SWOT rule should fire for given results.
+ * @param {Object} r - Results object.
+ * @param {Object} rule - SWOT rule.
+ * @returns {boolean}
+ */
 function swotActive(r, rule) {
   if (rule.dir === "top") {
     const top = rule.dim === "disc" ? r.disc.top : rule.dim === "sloan" ? r.sloan.top : rule.dim === "ennea" ? r.ennea.top : null;
     if (top !== rule.key) return false;
     return swotRaw(r, rule) > 50;
   }
+  // Activate when strength crosses 60% threshold
   return swotStrength(r, rule) >= 60;
 }
 
@@ -399,7 +418,13 @@ function swotValues(r) {
   ];
 }
 
+/**
+ * Check if profile is flat (all scores in neutral band).
+ * @param {Object} r - Results object.
+ * @returns {boolean}
+ */
 function swotIsFlat(r) {
+  // Flat profile when every score sits within neutral band around 50
   return swotValues(r).every(v => v >= SWOT_FLAT_BAND && v <= 100 - SWOT_FLAT_BAND);
 }
 
@@ -424,6 +449,11 @@ function swotSelect(items) {
   return picked.sort((a, b) => b.strength - a.strength);
 }
 
+/**
+ * Compute SWOT quadrants from results.
+ * @param {Object} r - Results object from computeResults.
+ * @returns {Object} SWOT with strengths, weaknesses, opportunities, threats arrays.
+ */
 function computeSwot(r) {
   const out = { strengths: [], weaknesses: [], opportunities: [], threats: [] };
   if (swotIsFlat(r)) {
@@ -449,6 +479,12 @@ function computeSwot(r) {
   return out;
 }
 
+/**
+ * Build detailed overview with stats and next moves.
+ * @param {Object} r - Results object.
+ * @param {Object} swot - SWOT object from computeSwot.
+ * @returns {Object} Overview with summary, balance, stats, moves.
+ */
 function buildOverview(r, swot) {
   const oceanTop = Object.keys(r.ocean).sort((a, b) => r.ocean[b] - r.ocean[a])[0];
   const risk = { O: 100 - r.ocean.O, C: 100 - r.ocean.C, E: 100 - r.ocean.E, A: 100 - r.ocean.A, N: r.ocean.N };
@@ -491,9 +527,20 @@ function buildOverview(r, swot) {
   return { summary, balance, stats, moves: moves.slice(0, 3) };
 }
 
+/**
+ * Encode answers array to a URL-safe base64 string.
+ * @param {Array<number|null>} ans - Answers array.
+ * @returns {string} Base64 encoded string.
+ */
 function encodeAnswers(ans) {
   return btoa(ans.map(a => (a === null ? 0 : a)).join(""));
 }
+
+/**
+ * Decode base64 answers string back to array.
+ * @param {string} s - Base64 encoded string.
+ * @returns {Array<number|null>|null} Decoded answers or null if invalid.
+ */
 function decodeAnswers(s) {
   if (typeof s !== "string" || !s) return null;
   let raw;
@@ -502,6 +549,11 @@ function decodeAnswers(s) {
   return [...raw].map(ch => { const n = Number(ch); return n === 0 ? null : n; });
 }
 
+/**
+ * Build a plain-text summary of results.
+ * @param {Object} r - Results object.
+ * @returns {string} Multi-line summary.
+ */
 function summaryText(r) {
   const sw = computeSwot(r);
   const titles = (q) => sw[q].map(i => i.title).join("; ");
